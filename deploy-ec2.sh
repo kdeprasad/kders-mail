@@ -19,7 +19,7 @@ NC='\033[0m' # No Color
 # Configuration
 DOMAIN="kders.com"
 MAIL_SUBDOMAIN="mail.kders.com"
-GITHUB_REPO="https://github.com/YOUR_USERNAME/kders-mail.git"  # Update this
+GITHUB_REPO="https://github.com/kdeprasad/kders-mail.git"  # Update this
 BRANCH="main"  # or "cn" if you want that branch
 
 echo -e "${YELLOW}Step 1/8: Updating system packages...${NC}"
