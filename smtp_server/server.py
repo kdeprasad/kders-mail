@@ -16,9 +16,11 @@ Path(MAILDIR).mkdir(parents=True, exist_ok=True)
 
 class MaildirHandler(AsyncMessage):
     async def handle_message(self, message: EmailMessage):
+        print(f"[SMTP] Received message")
         recipients = message.get_all('To', []) or message.get_all('Delivered-To', []) or []
         sender = message.get('From', 'unknown')
         subject = message.get('Subject', '')
+        print(f"[SMTP] From: {sender}, To: {recipients}, Subject: {subject}")
         payload = message.get_payload(decode=True)
         body = ''
         if payload:
@@ -34,11 +36,14 @@ class MaildirHandler(AsyncMessage):
             user_dir = Path(MAILDIR) / local
             user_dir.mkdir(parents=True, exist_ok=True)
             filename = user_dir / f"msg-{int(datetime.utcnow().timestamp())}-{os.getpid()}.eml"
+            print(f"[SMTP] Saving to: {filename}")
             with open(filename, 'w', encoding='utf-8') as fh:
                 fh.write(f"From: {sender}\nTo: {r}\nSubject: {subject}\n\n{body}")
+            print(f"[SMTP] Saved email for {local}")
 
         # optionally notify backend via HTTP
         if BACKEND_URL:
+            print(f"[SMTP] Notifying backend at {BACKEND_URL}")
             async with httpx.AsyncClient() as client:
                 for r in recipients:
                     try:
@@ -48,8 +53,9 @@ class MaildirHandler(AsyncMessage):
                             "recipient": r,
                         }
                         await client.post(BACKEND_URL, json=data, timeout=10.0)
+                        print(f"[SMTP] Backend notified for {r}")
                     except Exception as e:
-                        print("Failed to notify backend:", e)
+                        print(f"[SMTP] Failed to notify backend: {e}")
 
 async def run():
     handler = MaildirHandler()
