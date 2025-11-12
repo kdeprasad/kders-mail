@@ -16,7 +16,7 @@ async def get_current_user_id(authorization: Optional[str] = Header(None)) -> Op
         return None
     return int(payload.get('sub'))
 
-@router.post('/create')
+@router.post('/')
 async def create_group(data: GroupCreate, authorization: Optional[str] = Header(None)):
     user_id = await get_current_user_id(authorization)
     if not user_id:
@@ -25,7 +25,11 @@ async def create_group(data: GroupCreate, authorization: Optional[str] = Header(
         g = await crud.create_group(name=data.name, owner_id=user_id, session=session)
         return {"id": g.id, "name": g.name}
 
-@router.get('/list')
+@router.post('/create')
+async def create_group_legacy(data: GroupCreate, authorization: Optional[str] = Header(None)):
+    return await create_group(data, authorization)
+
+@router.get('/')
 async def list_groups(authorization: Optional[str] = Header(None)):
     user_id = await get_current_user_id(authorization)
     if not user_id:
@@ -33,6 +37,10 @@ async def list_groups(authorization: Optional[str] = Header(None)):
     async with async_session() as session:
         gs = await crud.list_groups(owner_id=user_id, session=session)
         return [{"id": g.id, "name": g.name} for g in gs]
+
+@router.get('/list')
+async def list_groups_legacy(authorization: Optional[str] = Header(None)):
+    return await list_groups(authorization)
 
 @router.get('/{group_id}/members')
 async def get_group_members(group_id: int, authorization: Optional[str] = Header(None)):

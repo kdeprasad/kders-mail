@@ -23,6 +23,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(auth_router, prefix="/api/auth", tags=["api-auth"])  # For frontend /api/auth paths
+app.include_router(auth_router, prefix="/api", tags=["api-users"])  # For /api/users/search
 app.include_router(mail_router, prefix="/mail", tags=["mail"])
 app.include_router(mail_router, prefix="/api/mail", tags=["mail"])  # For frontend /api/mail paths
 app.include_router(groups_router, prefix="/groups", tags=["groups"])
