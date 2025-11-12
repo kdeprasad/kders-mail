@@ -110,7 +110,7 @@ frontend/build/
 git add .
 
 # Commit
-git commit -m "Initial commit: kders.com email server with WhatsApp UI"
+git commit -m "Initial commit: kders.com email server"
 
 # Add remote (replace YOUR_USERNAME with your GitHub username)
 git remote add origin https://github.com/YOUR_USERNAME/kders-mail.git
@@ -165,7 +165,7 @@ Create new security group named `kders-mail-sg`:
 1. AWS Console → EC2 → Elastic IPs → Allocate
 2. Select the new IP → Actions → **Associate**
 3. Choose your instance: `kders-mail-server`
-4. **Copy the Elastic IP** (e.g., `54.123.45.67`) - you'll need this for DNS!
+4. **Copy the Elastic IP** (e.g., `13.51.27.56`) - you'll need this for DNS!
 
 ### Step 4: Set Reverse DNS (PTR Record)
 

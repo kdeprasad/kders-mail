@@ -16,11 +16,15 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Configuration
-DOMAIN="kders.com"
-MAIL_SUBDOMAIN="mail.kders.com"
-GITHUB_REPO="https://github.com/kdeprasad/kders-mail.git"  # Update this
-BRANCH="main"  # or "cn" if you want that branch
+# Configuration - UPDATE THESE!
+DOMAIN="kders.duckdns.org"  # Change to your DuckDNS subdomain (e.g., yourname.duckdns.org)
+MAIL_SUBDOMAIN="kders.duckdns.org"  # Same as DOMAIN for DuckDNS
+GITHUB_REPO="https://github.com/YOUR_USERNAME/kders-mail.git"  # Update this
+BRANCH="cn"  # or "main" depending on your branch
+
+# For Cloudflare users (if you have a paid domain):
+# DOMAIN="kders.com"
+# MAIL_SUBDOMAIN="mail.kders.com"
 
 echo -e "${YELLOW}Step 1/8: Updating system packages...${NC}"
 sudo apt-get update
@@ -90,11 +94,17 @@ sudo systemctl stop apache2 2>/dev/null || true
 sudo systemctl stop nginx 2>/dev/null || true
 
 # Get SSL certificates
+# For DuckDNS (single domain):
 sudo certbot certonly --standalone --agree-tos --non-interactive \
   --email admin@$DOMAIN \
-  -d $DOMAIN \
-  -d $MAIL_SUBDOMAIN \
-  -d www.$DOMAIN
+  -d $DOMAIN
+
+# For Cloudflare (multiple domains):
+# sudo certbot certonly --standalone --agree-tos --non-interactive \
+#   --email admin@$DOMAIN \
+#   -d $DOMAIN \
+#   -d $MAIL_SUBDOMAIN \
+#   -d www.$DOMAIN
 
 echo -e "${YELLOW}Step 8/8: Starting services...${NC}"
 cd /opt/kders-mail
