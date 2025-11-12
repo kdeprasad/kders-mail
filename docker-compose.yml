@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-mailuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-mailpass}
+      POSTGRES_DB: ${POSTGRES_DB:-maildb}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build: ./backend
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_CHAT_MODEL=${OPENAI_CHAT_MODEL:-gpt-4o-mini}
+      - PGVECTOR_ENABLED=${PGVECTOR_ENABLED:-false}
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+
+  smtp_server:
+    build: ./smtp_server
+    environment:
+      - BACKEND_URL=http://backend:8000/mail/compose
+    volumes:
+      - ./smtp_server/maildir:/var/mail
+    ports:
+      - "25:25"
+
+  pop3_server:
+    build: ./pop3_server
+    environment:
+      - BACKEND_URL=http://backend:8000
+    volumes:
+      - ./smtp_server/maildir:/var/mail
+    ports:
+      - "110:110"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+
+  nginx:
+    image: nginx:stable
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - certs:/etc/letsencrypt
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  db-data:
+  certs:
