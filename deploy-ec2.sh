@@ -19,7 +19,7 @@ NC='\033[0m' # No Color
 # Configuration - UPDATE THESE!
 DOMAIN="kders.duckdns.org"  # Change to your DuckDNS subdomain (e.g., yourname.duckdns.org)
 MAIL_SUBDOMAIN="kders.duckdns.org"  # Same as DOMAIN for DuckDNS
-GITHUB_REPO="https://github.com/YOUR_USERNAME/kders-mail.git"  # Update this
+GITHUB_REPO="https://github.com/kdeprasad/kders-mail.git"  # Update this
 BRANCH="cn"  # or "main" depending on your branch
 
 # For Cloudflare users (if you have a paid domain):
