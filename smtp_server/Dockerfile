@@ -6,4 +6,4 @@ COPY server.py /app/server.py
 RUN mkdir -p /var/mail
 VOLUME ["/var/mail"]
 EXPOSE 25
-CMD ["python", "server.py"]
+CMD ["python", "-u", "server.py"]

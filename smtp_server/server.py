@@ -61,7 +61,9 @@ async def run():
     handler = MaildirHandler()
     controller = Controller(handler, hostname='0.0.0.0', port=25)
     controller.start()
-    print('SMTP server started on port 25')
+    print('SMTP server started on port 25', flush=True)
+    import sys
+    sys.stdout.flush()
     try:
         while True:
             await asyncio.sleep(3600)
@@ -69,4 +71,5 @@ async def run():
         controller.stop()
 
 if __name__ == '__main__':
+    print('Starting SMTP server...', flush=True)
     asyncio.run(run())
