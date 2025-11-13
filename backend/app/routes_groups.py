@@ -16,7 +16,7 @@ async def get_current_user_id(authorization: Optional[str] = Header(None)) -> Op
         return None
     return int(payload.get('sub'))
 
-@router.post('/')
+@router.post('')
 async def create_group(data: GroupCreate, authorization: Optional[str] = Header(None)):
     user_id = await get_current_user_id(authorization)
     if not user_id:
@@ -29,7 +29,7 @@ async def create_group(data: GroupCreate, authorization: Optional[str] = Header(
 async def create_group_legacy(data: GroupCreate, authorization: Optional[str] = Header(None)):
     return await create_group(data, authorization)
 
-@router.get('/')
+@router.get('')
 async def list_groups(authorization: Optional[str] = Header(None)):
     user_id = await get_current_user_id(authorization)
     if not user_id:
