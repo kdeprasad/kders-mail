@@ -86,6 +86,10 @@ export default function Sidebar({token, email}){
     }
   }
 
+  const [selectedGroup, setSelectedGroup] = useState(null)
+  const [groupMembers, setGroupMembers] = useState([])
+  const [newMemberEmail, setNewMemberEmail] = useState('')
+
   const handleSendGroupMessage = async (group) => {
     const subject = prompt(`Subject for message to ${group.name}:`)
     if (!subject) return
@@ -94,24 +98,71 @@ export default function Sidebar({token, email}){
     if (!body) return
 
     try {
-      // Get group members
-      const membersResponse = await axios.get(`/api/groups/${group.id}/members`, {
-        headers: {Authorization: `Bearer ${token}`}
-      })
-      const members = membersResponse.data || []
-      
-      // Send message to each member
-      for (const member of members) {
-        await axios.post('/api/mail/compose', 
-          {recipient: member.email, subject: `[${group.name}] ${subject}`, body}, 
-          {headers: {Authorization: `Bearer ${token}`}}
-        )
-      }
-      
+      // Use the new group send endpoint
+      await axios.post(`/api/groups/${group.id}/send`, 
+        {subject, body}, 
+        {headers: {Authorization: `Bearer ${token}`}}
+      )
       alert('Group message sent successfully!')
     } catch (error) {
       console.error('Failed to send group message:', error)
       alert('Failed to send group message')
+    }
+  }
+
+  const handleManageGroup = async (group) => {
+    try {
+      const response = await axios.get(`/api/groups/${group.id}/members`, {
+        headers: {Authorization: `Bearer ${token}`}
+      })
+      setGroupMembers(response.data || [])
+      setSelectedGroup(group)
+    } catch (error) {
+      console.error('Failed to load group members:', error)
+      alert('Failed to load group members')
+    }
+  }
+
+  const handleAddMember = async () => {
+    if (!newMemberEmail.trim() || !selectedGroup) return
+
+    try {
+      await axios.post(`/api/groups/${selectedGroup.id}/members`, 
+        {email: newMemberEmail}, 
+        {headers: {Authorization: `Bearer ${token}`}}
+      )
+      
+      // Refresh members list
+      const response = await axios.get(`/api/groups/${selectedGroup.id}/members`, {
+        headers: {Authorization: `Bearer ${token}`}
+      })
+      setGroupMembers(response.data || [])
+      setNewMemberEmail('')
+      alert('Member added successfully!')
+    } catch (error) {
+      console.error('Failed to add member:', error)
+      alert(error.response?.data?.detail || 'Failed to add member')
+    }
+  }
+
+  const handleRemoveMember = async (memberId) => {
+    if (!selectedGroup) return
+    if (!confirm('Remove this member from the group?')) return
+
+    try {
+      await axios.delete(`/api/groups/${selectedGroup.id}/members/${memberId}`, {
+        headers: {Authorization: `Bearer ${token}`}
+      })
+      
+      // Refresh members list
+      const response = await axios.get(`/api/groups/${selectedGroup.id}/members`, {
+        headers: {Authorization: `Bearer ${token}`}
+      })
+      setGroupMembers(response.data || [])
+      alert('Member removed successfully!')
+    } catch (error) {
+      console.error('Failed to remove member:', error)
+      alert('Failed to remove member')
     }
   }
 
@@ -220,12 +271,20 @@ export default function Sidebar({token, email}){
                       </div>
                     </div>
                     {isTeacher && (
-                      <button
-                        onClick={() => handleSendGroupMessage(group)}
-                        className="mt-2 w-full px-2 py-1 bg-[#007ACC] hover:bg-[#005A9E] text-white rounded text-xs transition-colors"
-                      >
-                        Send Message
-                      </button>
+                      <div className="mt-2 flex gap-2">
+                        <button
+                          onClick={() => handleSendGroupMessage(group)}
+                          className="flex-1 px-2 py-1 bg-[#007ACC] hover:bg-[#005A9E] text-white rounded text-xs transition-colors"
+                        >
+                          Send Message
+                        </button>
+                        <button
+                          onClick={() => handleManageGroup(group)}
+                          className="flex-1 px-2 py-1 bg-gray-600 hover:bg-gray-700 text-white rounded text-xs transition-colors"
+                        >
+                          Manage Members
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))}
@@ -273,6 +332,86 @@ export default function Sidebar({token, email}){
           </div>
         )}
       </div>
+
+      {/* Group Management Modal */}
+      {selectedGroup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-96 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Manage {selectedGroup.name}
+              </h3>
+              <button
+                onClick={() => {setSelectedGroup(null); setGroupMembers([]); setNewMemberEmail('')}}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Add Member Form */}
+            <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+              <label className="block text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                Add Member
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={newMemberEmail}
+                  onChange={(e) => setNewMemberEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  className="flex-1 px-3 py-2 border rounded text-sm dark:bg-gray-600 dark:border-gray-500 dark:text-white"
+                />
+                <button
+                  onClick={handleAddMember}
+                  className="px-4 py-2 bg-[#007ACC] hover:bg-[#005A9E] text-white rounded text-sm transition-colors"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+
+            {/* Members List */}
+            <div>
+              <h4 className="text-sm font-medium mb-2 text-gray-900 dark:text-white">
+                Members ({groupMembers.length})
+              </h4>
+              {groupMembers.length === 0 ? (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No members yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {groupMembers.map((member) => (
+                    <div
+                      key={member.id}
+                      className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-700 rounded"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-xs font-semibold">
+                          {member.email.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {member.full_name || member.email}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {member.email}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveMember(member.id)}
+                        className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   )
