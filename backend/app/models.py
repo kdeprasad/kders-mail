@@ -28,6 +28,8 @@ class Message(Base):
     recipient = Column(String(256), nullable=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
     owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    is_read = Column(Boolean, default=False)  # Track read status
+    is_pinned = Column(Boolean, default=False)  # Pin important messages
     # optional vector embedding for RAG (pgvector)
     if Vector is not None:
         embedding = Column(Vector(384), nullable=True)

@@ -119,7 +119,7 @@ git push origin cn
 
 ```powershell
 # From folder with your .pem file:
-ssh -i "your-key.pem" ubuntu@YOUR_ELASTIC_IP
+ssh -i "kders-key.pem" ubuntu@13.51.27.56
 ```
 
 **If SSH fails** (Windows permissions issue):
@@ -132,7 +132,7 @@ icacls "your-key.pem" /grant:r "$($env:USERNAME):(R)"
 
 ```bash
 # Download deploy script
-wget https://raw.githubusercontent.com/YOUR_USERNAME/kders-mail/cn/deploy-ec2.sh
+wget https://raw.githubusercontent.com/kdeprasad/kders-mail/cn/deploy-ec2.sh
 
 # Make executable
 chmod +x deploy-ec2.sh
